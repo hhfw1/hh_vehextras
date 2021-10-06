@@ -13,7 +13,7 @@ Features :
   receive the vehicle! (As some vehicles dont have visible number plates!)
 - As this is a release you guys have any questions and have some good changes feel free to put some pull requests on github
 
-Preview :
-Forum :
+Preview : https://www.youtube.com/watch?v=GMR7BT6dStw
+Forum : https://forum.cfx.re/t/qbcore-hh-vehicle-extras-release-free/4768054
 
 
