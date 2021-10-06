@@ -13,15 +13,13 @@ RegisterNetEvent('hhfw:client:givecar')
 AddEventHandler('hhfw:client:givecar', function(model, plate)
     QBCore.Functions.SpawnVehicle(model, function(veh)
         TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-        --exports['LegacyFuel']:SetFuel(veh, 100)
-        exports['hh_imps']:SetFuel(veh, 100)
+        exports['LegacyFuel']:SetFuel(veh, 100)
         SetVehicleNumberPlateText(veh, plate)
         SetEntityAsMissionEntity(veh, true, true)
         local props = QBCore.Functions.GetVehicleProperties(veh)
         local hash = props.model
         local vehname = GetDisplayNameFromVehicleModel(hash):lower()
-        --TriggerEvent("vehiclekeys:client:SetOwner", GetVehicleNumberPlateText(veh))
-        TriggerServerEvent('garage:addKeys', GetVehicleNumberPlateText(veh))
+        TriggerEvent("vehiclekeys:client:SetOwner", GetVehicleNumberPlateText(veh))
         if QBCore.Shared.Vehicles[vehname] ~= nil and next(QBCore.Shared.Vehicles[vehname]) ~= nil then
             TriggerServerEvent('hhfw:server:SaveCar', props, QBCore.Shared.Vehicles[vehname], veh, GetVehicleNumberPlateText(veh))
         else
@@ -41,7 +39,6 @@ AddEventHandler('hhfw:client:transferrc', function(id)
     local player, distance = GetClosestPlayer()
     if player ~= -1 and distance < 2.5 then
         local playerId = GetPlayerServerId(player)
-        print(playerId, tonumber(id))
         if playerId == tonumber(id) then
             TriggerServerEvent("hhfw:GiveRC", GetPlayerServerId(PlayerId()), playerId, GetVehicleNumberPlateText(vehicle))
         else
