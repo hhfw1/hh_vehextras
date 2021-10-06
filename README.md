@@ -1,7 +1,7 @@
 # hh_vehextras
 Description :
 
-This is a free script which we are releasing this is a very basic and useful script for admins and normal players for usual rp the admins will be adble to give vehicle to anyone in the server with a custom number plate in the server, whereas for civilians they will be able to transfer vehicles to anyone in the city! ; else preview is uploaded below!
+This is a free script which we are releasing this is a very basic and useful script for admins and normal players for usual rp the admins will be adble to give vehicle to anyone in the server with a with custom or random plate number in the server, whereas for civilians they will be able to transfer vehicles to anyone in the city! ; else preview is uploaded below!
 
 Features :
 - A single command to give a car to anyone in the server /givecar [id] [vehiclename] [licenseplate]    *Only admins! Note: If plate is none will randomly generate a new plate
