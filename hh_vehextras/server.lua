@@ -45,9 +45,11 @@ QBCore.Commands.Add("givecar", "Give Vehicle to Players (Admin Only)", {{name="i
     local ply = QBCore.Functions.GetPlayer(source)
     local veh = args[2]
     local plate = args[3]
+    local tPlayer = QBCore.Functions.GetPlayer(tonumber(args[1]))
     if plate == nil or plate == "" then plate = GeneratePlate() end
     if veh ~= nil and args[1] ~= nil then
         TriggerClientEvent('hhfw:client:givecar', args[1], veh, plate)
+	TriggerClientEvent("QBCore:Notify", source, "You gave vehilce to "..tPlayer.PlayerData.charinfo.firstname.." "..tPlayer.PlayerData.charinfo.lastname.."Vehicle :"..veh.." With Plate : "..plate, "success", 8000)
     else 
         TriggerClientEvent('QBCore:Notify', source, "Incorrect Format", "error")
     end
