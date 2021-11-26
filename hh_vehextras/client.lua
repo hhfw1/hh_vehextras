@@ -1,13 +1,4 @@
-local QBCore = nil
-
-Citizen.CreateThread(function()
-  	while QBCore == nil do
-      TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
-      Citizen.Wait(200)
-  	end
-end)
-
-
+local QBCore = exports['qb-core']:GetCoreObject()
 
 RegisterNetEvent('hhfw:client:givecar')
 AddEventHandler('hhfw:client:givecar', function(model, plate)
@@ -19,9 +10,9 @@ AddEventHandler('hhfw:client:givecar', function(model, plate)
         local props = QBCore.Functions.GetVehicleProperties(veh)
         local hash = props.model
         local vehname = GetDisplayNameFromVehicleModel(hash):lower()
-        TriggerEvent("vehiclekeys:client:SetOwner", GetVehicleNumberPlateText(veh))
+        TriggerEvent("vehiclekeys:client:SetOwner", QBCore.Functions.GetPlate(veh))
         if QBCore.Shared.Vehicles[vehname] ~= nil and next(QBCore.Shared.Vehicles[vehname]) ~= nil then
-            TriggerServerEvent('hhfw:server:SaveCar', props, QBCore.Shared.Vehicles[vehname], veh, GetVehicleNumberPlateText(veh))
+            TriggerServerEvent('hhfw:server:SaveCar', props, QBCore.Shared.Vehicles[vehname], veh, QBCore.Functions.GetPlate(veh))
         else
             QBCore.Functions.Notify('You cant store this vehicle in your garage..', 'error')
         end     
@@ -40,7 +31,7 @@ AddEventHandler('hhfw:client:transferrc', function(id)
     if player ~= -1 and distance < 2.5 then
         local playerId = GetPlayerServerId(player)
         if playerId == tonumber(id) then
-            TriggerServerEvent("hhfw:GiveRC", GetPlayerServerId(PlayerId()), playerId, GetVehicleNumberPlateText(vehicle))
+            TriggerServerEvent("hhfw:GiveRC", GetPlayerServerId(PlayerId()), playerId, QBCore.Functions.GetPlate(vehicle))
         else
             QBCore.Functions.Notify("Person not Near!", "error")
         end

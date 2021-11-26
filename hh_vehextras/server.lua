@@ -1,6 +1,4 @@
-QBCore = nil
-TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
-
+local QBCore = exports['qb-core']:GetCoreObject()
 
 local NumberCharset = {}
 local Charset = {}
@@ -11,7 +9,7 @@ for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
 function GeneratePlate()
 	local plate = tostring(GetRandomNumber(1)) .. GetRandomLetter(2) .. tostring(GetRandomNumber(3)) .. GetRandomLetter(2)
-	local result = exports.ghmattimysql:scalarSync('SELECT plate FROM player_vehicles WHERE plate=@plate', {['@plate'] = plate})
+	local result = exports.oxmysql:scalarSync('SELECT plate FROM player_vehicles WHERE plate=@plate', {['@plate'] = plate})
 	if result then
 		plate = tostring(GetRandomNumber(1)) .. GetRandomLetter(2) .. tostring(GetRandomNumber(3)) .. GetRandomLetter(2)
 	end
@@ -60,9 +58,9 @@ RegisterServerEvent('hhfw:server:SaveCar')
 AddEventHandler('hhfw:server:SaveCar', function(mods, vehicle, hash, plate)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local result = exports.ghmattimysql:executeSync('SELECT plate FROM player_vehicles WHERE plate=@plate', {['@plate'] = plate})
+    local result = exports.oxmysql:executeSync('SELECT plate FROM player_vehicles WHERE plate=@plate', {['@plate'] = plate})
     if result[1] == nil then
-        exports.ghmattimysql:execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (@license, @citizenid, @vehicle, @hash, @mods, @plate, @state)', {
+        exports.oxmysql:execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (@license, @citizenid, @vehicle, @hash, @mods, @plate, @state)', {
             ['@license'] = Player.PlayerData.license,
             ['@citizenid'] = Player.PlayerData.citizenid,
             ['@vehicle'] = vehicle.model,
@@ -99,11 +97,11 @@ AddEventHandler('hhfw:GiveRC', function(player, target, plate)
 	local xPlayer = QBCore.Functions.GetPlayer(player)
 	local tPlayer = QBCore.Functions.GetPlayer(target)
     
-    exports.ghmattimysql:executeSync("SELECT * FROM `player_vehicles` WHERE `plate` = '"..plate.."' AND `citizenid` = '"..xPlayer.PlayerData.citizenid.."'", function(result)
+    exports.oxmysql:executeSync("SELECT * FROM `player_vehicles` WHERE `plate` = '"..plate.."' AND `citizenid` = '"..xPlayer.PlayerData.citizenid.."'", function(result)
         if result[1] ~= nil and next(result[1]) ~= nil then
             if plate == result[1].plate then
-                exports.ghmattimysql:execute('DELETE FROM player_vehicles WHERE plate=@plate AND vehicle=@vehicle', {['@plate'] = plate, ['@vehicle'] = result[1].vehicle})
-                exports.ghmattimysql:execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (@license, @citizenid, @vehicle, @hash, @mods, @plate, @state)', {
+                exports.oxmysql:execute('DELETE FROM player_vehicles WHERE plate=@plate AND vehicle=@vehicle', {['@plate'] = plate, ['@vehicle'] = result[1].vehicle})
+                exports.oxmysql:execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (@license, @citizenid, @vehicle, @hash, @mods, @plate, @state)', {
                     ['@steam'] = tPlayer.PlayerData.license,
                     ['@citizenid'] = tPlayer.PlayerData.citizenid,
                     ['@vehicle'] = result[1].vehicle,
