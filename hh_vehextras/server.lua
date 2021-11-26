@@ -62,9 +62,6 @@ RegisterCommand("givecar", function(source, args)
 	if plate == nil or plate == "" then plate = GeneratePlate() end
 	if veh ~= nil and args[1] ~= nil then
 		TriggerClientEvent('hhfw:client:givecar', args[1], veh, plate)
-	TriggerClientEvent("QBCore:Notify", source, "You gave vehilce to "..tPlayer.PlayerData.charinfo.firstname.." "..tPlayer.PlayerData.charinfo.lastname.." Vehicle :"..veh.." With Plate : "..plate, "success", 8000)
-	else 
-		TriggerClientEvent('QBCore:Notify', source, "Incorrect Format", "error")
 	end
 end, false)
 
