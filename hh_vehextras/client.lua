@@ -1,16 +1,8 @@
-local QBCore = nil
-
-Citizen.CreateThread(function()
-  	while QBCore == nil do
-      TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
-      Citizen.Wait(200)
-  	end
-end)
+local QBCore = exports['qb-core']:GetCoreObject()
 
 
 
-RegisterNetEvent('hhfw:client:givecar')
-AddEventHandler('hhfw:client:givecar', function(model, plate)
+RegisterNetEvent('hhfw:client:givecar', function(model, plate)
     QBCore.Functions.SpawnVehicle(model, function(veh)
         TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
         exports['LegacyFuel']:SetFuel(veh, 100)
@@ -27,6 +19,8 @@ AddEventHandler('hhfw:client:givecar', function(model, plate)
         end     
     end)
 end)
+
+
 
 RegisterNetEvent('hhfw:client:transferrc')
 AddEventHandler('hhfw:client:transferrc', function(id)
