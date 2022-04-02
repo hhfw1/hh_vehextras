@@ -22,8 +22,7 @@ end)
 
 
 
-RegisterNetEvent('hhfw:client:transferrc')
-AddEventHandler('hhfw:client:transferrc', function(id)
+RegisterNetEvent('hhfw:client:transferrc', function(id)
     local me = PlayerPedId()
     if not IsPedSittingInAnyVehicle(me) then
         QBCore.Functions.Notify("You must be in a Vehicle to Transfer", "error")
