@@ -1,57 +1,31 @@
-QBCore = nil
-TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
+local QBCore = exports['qb-core']:GetCoreObject()
 
 
-local NumberCharset = {}
-local Charset = {}
-
-for i = 48,  57 do table.insert(NumberCharset, string.char(i)) end
-for i = 65,  90 do table.insert(Charset, string.char(i)) end
-for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
 function GeneratePlate()
-	local plate = tostring(GetRandomNumber(1)) .. GetRandomLetter(2) .. tostring(GetRandomNumber(3)) .. GetRandomLetter(2)
-	local result = exports.ghmattimysql:scalarSync('SELECT plate FROM player_vehicles WHERE plate=@plate', {['@plate'] = plate})
-	if result then
-		plate = tostring(GetRandomNumber(1)) .. GetRandomLetter(2) .. tostring(GetRandomNumber(3)) .. GetRandomLetter(2)
-	end
-	return plate:upper()
+    local plate = QBCore.Shared.RandomInt(1) .. QBCore.Shared.RandomStr(2) .. QBCore.Shared.RandomInt(3) .. QBCore.Shared.RandomStr(2)
+    local result = MySQL.Sync.fetchScalar('SELECT plate FROM player_vehicles WHERE plate = ?', {plate})
+    if result then
+        return GeneratePlate()
+    else
+        return plate:upper()
+    end
 end
-  
-function GetRandomNumber(length)
-	Citizen.Wait(1)
-	math.randomseed(GetGameTimer())
-	if length > 0 then
-	  return GetRandomNumber(length - 1) .. NumberCharset[math.random(1, #NumberCharset)]
-	else
-	  return ''
-	end
-end
-  
-function GetRandomLetter(length)
-	Citizen.Wait(1)
-	math.randomseed(GetGameTimer())
-	if length > 0 then
-	  return GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
-	else
-	  return ''
-	end
-end
-
 
 
 
 QBCore.Commands.Add("givecar", "Give Vehicle to Players (Admin Only)", {{name="id", help="Player ID"}, {name="model", help="Vehicle Model, for example: t20"}, {name="plate", help="Custom Number Plate (Leave to assign random) , for example: ABC123"}}, false, function(source, args)
-    local ply = QBCore.Functions.GetPlayer(source)
+    local src = source
+    local ply = QBCore.Functions.GetPlayer(src)
+    local tPlayer = QBCore.Functions.GetPlayer(tonumber(args[1]))
     local veh = args[2]
     local plate = args[3]
-    local tPlayer = QBCore.Functions.GetPlayer(tonumber(args[1]))
-    if plate == nil or plate == "" then plate = GeneratePlate() end
-    if veh ~= nil and args[1] ~= nil then
+    if not plate or plate == "" then plate = GeneratePlate() end
+    if veh and tPlayer then
         TriggerClientEvent('hhfw:client:givecar', args[1], veh, plate)
-	TriggerClientEvent("QBCore:Notify", source, "You gave vehilce to "..tPlayer.PlayerData.charinfo.firstname.." "..tPlayer.PlayerData.charinfo.lastname.." Vehicle :"..veh.." With Plate : "..plate, "success", 8000)
+	TriggerClientEvent("QBCore:Notify", src, "You gave vehilce to "..tPlayer.PlayerData.charinfo.firstname.." "..tPlayer.PlayerData.charinfo.lastname.." Vehicle :"..veh.." With Plate : "..plate, "success", 8000)
     else 
-        TriggerClientEvent('QBCore:Notify', source, "Incorrect Format", "error")
+        TriggerClientEvent('QBCore:Notify', src, "Incorrect Format", "error")
     end
 end, "god")
 
@@ -60,16 +34,16 @@ RegisterServerEvent('hhfw:server:SaveCar')
 AddEventHandler('hhfw:server:SaveCar', function(mods, vehicle, hash, plate)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
-    local result = exports.ghmattimysql:executeSync('SELECT plate FROM player_vehicles WHERE plate=@plate', {['@plate'] = plate})
+    local result = MySQL.Sync.fetchAll('SELECT plate FROM player_vehicles WHERE plate = ?', { plate })
     if result[1] == nil then
-        exports.ghmattimysql:execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (@license, @citizenid, @vehicle, @hash, @mods, @plate, @state)', {
-            ['@license'] = Player.PlayerData.license,
-            ['@citizenid'] = Player.PlayerData.citizenid,
-            ['@vehicle'] = vehicle.model,
-            ['@hash'] = vehicle.hash,
-            ['@mods'] = json.encode(mods),
-            ['@plate'] = plate,
-            ['@state'] = 0
+	MySQL.Async.insert('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (?, ?, ?, ?, ?, ?, ?)', {
+            Player.PlayerData.license,
+            Player.PlayerData.citizenid,
+            vehicle.model,
+            vehicle.hash,
+            json.encode(mods),
+            plate,
+            0
         })
         TriggerClientEvent('QBCore:Notify', src, 'The vehicle is now yours!', 'success', 5000)
     else
@@ -84,8 +58,7 @@ end)
 
 QBCore.Commands.Add("transfercar", "Transfer Vehicle to Other Player (Must Be in Vehicle)", {{name="id", help="Player ID"}}, false, function(source, args)
     local id = args[1]
-    local plate = args[2]
-    if id ~= nil then
+    if id then
         TriggerClientEvent('hhfw:client:transferrc', source, id)
     else 
         TriggerClientEvent('QBCore:Notify', source, "Please Provide ID", "error")
@@ -93,27 +66,16 @@ QBCore.Commands.Add("transfercar", "Transfer Vehicle to Other Player (Must Be in
 end)
 
 
-RegisterServerEvent('hhfw:GiveRC')
-AddEventHandler('hhfw:GiveRC', function(player, target, plate)
+RegisterServerEvent('hhfw:GiveRC', function(player, target, plate)
     local src = source
-	local xPlayer = QBCore.Functions.GetPlayer(player)
-	local tPlayer = QBCore.Functions.GetPlayer(target)
-    
-    exports.ghmattimysql:executeSync("SELECT * FROM `player_vehicles` WHERE `plate` = '"..plate.."' AND `citizenid` = '"..xPlayer.PlayerData.citizenid.."'", function(result)
-        if result[1] ~= nil and next(result[1]) ~= nil then
+    local xPlayer = QBCore.Functions.GetPlayer(player)
+    local tPlayer = QBCore.Functions.GetPlayer(target)
+    MySQL.Async.fetchAll('SELECT * FROM player_vehicles WHERE plate = ? AND citizenid = ?', {plate, xPlayer.PlayerData.citizenid}, function(result)  
+        if result[1] and next(result[1]) then
             if plate == result[1].plate then
-                exports.ghmattimysql:execute('DELETE FROM player_vehicles WHERE plate=@plate AND vehicle=@vehicle', {['@plate'] = plate, ['@vehicle'] = result[1].vehicle})
-                exports.ghmattimysql:execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (@license, @citizenid, @vehicle, @hash, @mods, @plate, @state)', {
-                    ['@steam'] = tPlayer.PlayerData.license,
-                    ['@citizenid'] = tPlayer.PlayerData.citizenid,
-                    ['@vehicle'] = result[1].vehicle,
-                    ['@hash'] = GetHashKey(result[1].vehicle),
-                    ['@mods'] = json.encode(result[1].mods),
-                    ['@plate'] = result[1].plate,
-                    ['@state'] = 0
-                })
-                TriggerClientEvent("QBCore:Notify", player, "You gave registration paper to "..tPlayer.PlayerData.charinfo.firstname.." "..tPlayer.PlayerData.charinfo.lastname, "error", 8000)
-                TriggerClientEvent("QBCore:Notify", target, "You received registration paper from "..xPlayer.PlayerData.charinfo.firstname.." "..xPlayer.PlayerData.charinfo.lastname, "success", 8000)     
+                MySQL.Async.execute('UPDATE player_vehicles SET citizenid = ?, license = ? WHERE plate = ?', {tPlayer.PlayerData.citizenid, tPlayer.PlayerData.license, result[1].plate})
+                TriggerClientEvent("QBCore:Notify", player.PlayerData.source, "You gave registration paper to "..tPlayer.PlayerData.charinfo.firstname.." "..tPlayer.PlayerData.charinfo.lastname, "success", 8000)
+                TriggerClientEvent("QBCore:Notify", target.PlayerData.source, "You received registration paper from "..xPlayer.PlayerData.charinfo.firstname.." "..xPlayer.PlayerData.charinfo.lastname, "success", 8000)     
             else
                 TriggerClientEvent("QBCore:Notify", src, "You dont't own this vehicle", "error", 5000)
             end
