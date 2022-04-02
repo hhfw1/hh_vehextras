@@ -30,8 +30,8 @@ QBCore.Commands.Add("givecar", "Give Vehicle to Players (Admin Only)", {{name="i
 end, "god")
 
 
-RegisterServerEvent('hhfw:server:SaveCar')
-AddEventHandler('hhfw:server:SaveCar', function(mods, vehicle, hash, plate)
+
+RegisterServerEvent('hhfw:server:SaveCar', function(mods, vehicle, hash, plate)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local result = MySQL.Sync.fetchAll('SELECT plate FROM player_vehicles WHERE plate = ?', { plate })
